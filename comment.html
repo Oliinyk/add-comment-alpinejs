@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment System with Alpine.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.1/dist/cdn.min.js" defer></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        .comment-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            position: absolute;
+        }
+        .comment-list {
+            max-width: 600px;
+            margin: auto;
+            position: relative;
+        }
+        .comment-input {
+            width: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            position: absolute;
+            display: none; /* Initially hidden */
+            z-index: 1000; /* Ensure it's on top of other elements */
+        }
+        .add-comment-btn {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .send-btn {
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none; /* Initially hidden */
+        }
+        .active-status {
+            cursor: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"%3E%3Cline x1="8" y1="1" x2="8" y2="15" stroke="%23000" stroke-width="2"/%3E%3Cline x1="1" y1="8" x2="15" y2="8" stroke="%23000" stroke-width="2"/%3E%3C/svg%3E'), auto;
+        }
+    </style>
+</head>
+<body x-data="commentSystem()" @click="handleBodyClick">
+    <div class="comment-list">
+        <!-- Список коментарів -->
+        <template x-for="comment in comments" :key="comment.id">
+            <div class="comment-box" :style="{ top: comment.y + 'px', left: comment.x + 'px' }">
+                <p x-text="comment.text"></p>
+            </div>
+        </template>
+
+        <!-- Поле для коментаря -->
+        <textarea x-ref="commentInput" x-model="newComment" class="comment-input"
+            @keydown.enter.prevent="handleEnter" @click.stop="handleTextareaClick">
+        </textarea>
+        <button x-show="showSendButton" @click="handleSend" class="send-btn">Send</button>
+    </div>
+    <button @click.stop="toggleCommenting" class="add-comment-btn">Add comment</button>
+
+    <script>
+        function commentSystem() {
+            return {
+                comments: [],
+                newComment: '',
+                showSendButton: false,
+                commentingEnabled: false,
+                currentPosition: { x: 0, y: 0 },
+                textareaVisible: false,
+                toggleCommenting() {
+                    this.commentingEnabled = !this.commentingEnabled;
+
+                    // Додати або видалити клас для курсора
+                    if (this.commentingEnabled) {
+                        document.body.classList.add('active-status');
+                    } else {
+                        document.body.classList.remove('active-status');
+                        this.resetCommentInput();
+                    }
+                },
+                handleBodyClick(event) {
+                    if (!this.commentingEnabled) return;
+
+                    // Перевірка, чи клік був всередині .comment-input
+                    if (this.$refs.commentInput.contains(event.target)) return;
+
+                    // Перевірка, чи клік був всередині .add-comment-btn
+                    if (event.target.closest('.add-comment-btn')) return;
+
+                    const x = event.clientX;
+                    const y = event.clientY;
+
+                    // Перевірка, чи поле для коментаря вже відображається
+                    if (!this.textareaVisible) {
+                        this.$refs.commentInput.style.display = 'block';
+                        this.$refs.commentInput.style.left = `${x}px`;
+                        this.$refs.commentInput.style.top = `${y}px`;
+                        this.$refs.commentInput.focus();
+                        this.showSendButton = true;
+                        this.textareaVisible = true;
+                        this.currentPosition = { x, y };
+                    } else {
+                        if (this.newComment.trim() === '') {
+                            // При кліку на body, якщо коментар пустий, скидаємо поле
+                            this.resetCommentInput();
+                        } else {
+                            // Додаємо коментар
+                            this.saveComment();
+                        }
+                    }
+                },
+                handleEnter() {
+                    if (this.newComment.trim() === '') {
+                        this.resetCommentInput();
+                    } else {
+                        this.saveComment();
+                    }
+                },
+                handleTextareaClick(event) {
+                    // Перешкоджаємо спрацьовуванню handleBodyClick при кліку всередині textarea
+                    event.stopPropagation();
+                },
+                handleSend() {
+                    if (this.newComment.trim() === '') {
+                        this.resetCommentInput();
+                    } else {
+                        this.saveComment();
+                    }
+                },
+                saveComment() {
+                    this.comments.push({
+                        id: Date.now(),
+                        text: this.newComment.trim(),
+                        x: this.currentPosition.x,
+                        y: this.currentPosition.y
+                    });
+                    this.resetCommentInput();
+                },
+                resetCommentInput() {
+                    this.newComment = '';
+                    this.$refs.commentInput.style.display = 'none';
+                    this.showSendButton = false;
+                    this.textareaVisible = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
