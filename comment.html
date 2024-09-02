@@ -15,16 +15,40 @@
             margin: 0;
         }
         .comment-box {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 0;
-            width: 250px;
+            display: flex;
+            max-width: 290px;
             position: absolute;
+        }
+        .comment-box > svg {
+            flex: 0 0 auto;
+            position: relative;
+            top: 3px;
         }
         .comment-box p {
             word-break: break-word;
+            background-color: #fff;
+            border-radius: 5px;
+            margin: 0;
+            
+
+            width: 0;
+            height: 0;
+            border: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .comment-box:hover {
+            width: 290px;
+        }
+        .comment-box:hover p {
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 100%;
+            width: 100%;
+        }
+        .user-icon {
+            left: 4px;
+            top: 7px;
         }
         .comment-list {
             position: relative;
@@ -76,6 +100,20 @@
         <!-- Список коментарів -->
         <template x-for="comment in comments" :key="comment.id">
             <div class="comment-box" :style="{ top: comment.y + 'px', left: comment.x + 'px' }" @click.stop>
+
+                <svg fill="none" height="40" viewBox="0 0 40 40" width="40" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m0 0h40v40h-40z" fill="#fff" fill-opacity=".01"/>
+                    <g stroke-linecap="round" stroke-linejoin="round" stroke-width="3.333">
+                      <path d="m36.6667 20c0 9.0638-7.3363 16.6667-16.6667 16.6667-5.1323 0-16.6667 0-16.6667 0s0-12.1569 0-16.6667c0-9.0638 7.3363-16.6667 16.6667-16.6667s16.6667 7.3363 16.6667 16.6667z" fill="#007BFF" stroke="#007BFF"/>
+                    </g>
+                </svg>
+
+                <div class="rounded-full bg-violet-200 w-8 h-8 text-violet-900 flex items-center justify-center absolute user-icon">
+                    <div class="overflow-hidden relative h-full w-full">
+                        <span class="invisible first-letter:visible font-semibold text-base absolute left-2.5 top-1">Kevin</span>
+                    </div>
+                </div>
+
                 <p x-text="comment.text"></p>
             </div>
         </template>
