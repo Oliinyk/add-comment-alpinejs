@@ -19,37 +19,22 @@
             max-width: 290px;
             position: absolute;
         }
-        .comment-box > svg {
-            flex: 0 0 auto;
-            position: relative;
-            top: 3px;
-        }
-        .comment-box p {
+        .comment-box .text-col {
             word-break: break-word;
             background-color: #fff;
             border-radius: 5px;
-            margin: 0;
+            margin: 5px 0 0 42px;
             width: 0;
             height: 0;
             border: 0;
             padding: 0;
             overflow: hidden;
-        }
-        .comment-box.active,
-        .comment-box:hover {
-            width: 290px;
             z-index: 1;
         }
-        .comment-box.active p,
-        .comment-box:hover p {
-            border: 1px solid #ddd;
-            padding: 10px;
-            height: 100%;
-            width: 100%;
-        }
         .user-icon {
-            left: 4px;
+            position: absolute;
             top: 7px;
+            left: 3px;
         }
         .comment-list {
             position: relative;
@@ -94,6 +79,45 @@
         .active-status {
             cursor: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSJub25lIiBoZWlnaHQ9IjE4IiB2aWV3Qm94PSIwIDAgMTggMTgiIHdpZHRoPSIxOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCiAgPHBhdGggZD0ibTAgMGgxOHYxOGgtMTh6IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9Ii4wMSIvPg0KICA8ZyBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij4NCiAgICA8cGF0aCBkPSJtMTYuNSA5YzAgNC4xMjU3LTMuMzc0MyA3LjUtNy41IDcuNS0yLjIzNDMgMC03LjUgMC03LjUgMHMwLTUuNDcwOCAwLTcuNWMwLTQuMTI1NyAzLjM3NDMtNy41IDcuNS03LjVzNy41IDMuMzc0MyA3LjUgNy41eiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMDAwIi8+DQogIDwvZz4NCjwvc3ZnPg=="), auto;
         }
+        .comment-img {
+            background-color: #fff;
+            box-shadow: 0px 0px 2px 1px #c2c2c2;
+            border-radius: 50%;
+            border-bottom-left-radius: 0;
+            height: 38px;
+            width: 38px;
+            flex: 0 0 auto;
+            position: absolute;
+            left: 0;
+            top: 4px;
+        }
+        .comment-box.active,
+        .comment-box:hover {
+            width: 290px;
+            z-index: 10;
+        }
+        .comment-box.active .text-col {
+            box-shadow: 0px 0px 2px 1px #c2c2c2;
+            padding: 5px 5px 10px;
+            height: 100%;
+            width: 100%;
+        }
+        .comment-box:not(.active):hover .text-col {
+            padding: 5px 5px 10px;
+            height: 100%;
+            width: 100%;
+        }
+        .comment-box:not(.active):hover .comment-img {
+            width: 300px;
+            border-radius: 20px;
+            border-bottom-left-radius: 0;
+            height: 100%;
+            box-shadow: 0px 0px 2px 1px #c2c2c2;
+        }
+        .comment-box:not(.active):hover .user-icon {
+            top: 12px;
+            left: 8px;
+        }
     </style>
 </head>
 <body x-data="commentSystem()" @click="handleBodyClick">
@@ -105,20 +129,18 @@
                  :style="{ top: comment.y + 'px', left: comment.x + 'px' }" 
                  @click.stop="setActiveComment(comment.id)">
 
-                <svg fill="none" height="40" viewBox="0 0 40 40" width="40" xmlns="http://www.w3.org/2000/svg">
-                    <path d="m0 0h40v40h-40z" fill="#fff" fill-opacity=".01"/>
-                    <g stroke-linecap="round" stroke-linejoin="round" stroke-width="3.333">
-                      <path d="m36.6667 20c0 9.0638-7.3363 16.6667-16.6667 16.6667-5.1323 0-16.6667 0-16.6667 0s0-12.1569 0-16.6667c0-9.0638 7.3363-16.6667 16.6667-16.6667s16.6667 7.3363 16.6667 16.6667z" fill="#007BFF" stroke="#007BFF"/>
-                    </g>
-                </svg>
+                <div class="comment-img"></div>
 
-                <div class="rounded-full bg-violet-200 w-8 h-8 text-violet-900 flex items-center justify-center absolute user-icon">
+                <div class="rounded-full bg-violet-200 w-8 h-8 text-violet-900 flex items-center justify-center user-icon">
                     <div class="overflow-hidden relative h-full w-full">
                         <span class="invisible first-letter:visible font-semibold text-base absolute left-2.5 top-1">Kevin</span>
                     </div>
                 </div>
 
-                <p x-text="comment.text"></p>
+                <div class="text-col">
+                    <p class="text-sm font-semibold">Kevin</p>
+                    <p x-text="comment.text" class="text-sm"></p>
+                </div>
             </div>
         </template>
 
