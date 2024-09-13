@@ -18,6 +18,7 @@
             display: flex;
             max-width: 290px;
             position: absolute;
+            cursor: auto;
         }
         .comment-box .text-col {
             word-break: break-word;
@@ -120,13 +121,13 @@
         }
     </style>
 </head>
-<body x-data="commentSystem()" @click="handleBodyClick">
+<body x-data="commentSystem()" @click="handleBodyClick" @keydown.window.escape="cancelCommenting">
     <div class="comment-list">
         <!-- Список коментарів -->
         <template x-for="comment in comments" :key="comment.id">
             <div class="comment-box" 
                  :class="{ 'active': comment.id === activeCommentId }" 
-                 :style="{ top: comment.y + 'px', left: comment.x + 'px' }" 
+                 :style="{ top: comment.relativeY + 'vh', left: comment.relativeX + 'vw' }" 
                  @click.stop="setActiveComment(comment.id)">
 
                 <div class="comment-img"></div>
@@ -181,40 +182,31 @@
                 currentPosition: { x: 0, y: 0 },
                 textareaVisible: false,
                 activeCommentId: null,
+
                 toggleCommenting() {
                     this.commentingEnabled = !this.commentingEnabled;
 
-                    // Додати або видалити клас для курсора
                     if (this.commentingEnabled) {
                         document.body.classList.add('active-status');
                     } else {
-                        document.body.classList.remove('active-status');
-                        this.resetCommentInput();
+                        this.cancelCommenting();
                     }
                 },
-                handleBodyClick(event) {
-                    // Перевірка, чи клік був всередині активного коментаря
-                    if (event.target.closest('.comment-box.active')) {
-                        return;
-                    }
 
-                    // Видалення класу active у активного коментаря
+                handleBodyClick(event) {
+                    if (event.target.closest('.comment-box.active')) return;
+
                     if (this.activeCommentId !== null) {
                         this.activeCommentId = null;
                     }
 
-                    // Перевірка, чи клік був всередині textarea
                     if (this.$refs.commentInput.contains(event.target)) return;
 
-                    // Перевірка, чи клік був всередині .add-comment-btn
                     if (event.target.closest('.add-comment-btn')) return;
 
-                    // Перевірка, чи клік був всередині .send-btn
                     if (event.target.closest('.send-btn')) return;
 
-                    // Перевірка на наявність класу active-status
                     if (document.body.classList.contains('active-status')) {
-                        // Перевірка, чи поле для коментаря вже відображається
                         if (!this.textareaVisible) {
                             const x = event.clientX;
                             const y = event.clientY;
@@ -227,15 +219,14 @@
                             this.currentPosition = { x, y };
                         } else {
                             if (this.newComment.trim() === '') {
-                                // При кліку на body, якщо коментар пустий, скидаємо поле
                                 this.resetCommentInput();
                             } else {
-                                // Додаємо коментар
                                 this.saveComment();
                             }
                         }
                     }
                 },
+
                 handleEnter() {
                     if (this.newComment.trim() === '') {
                         this.resetCommentInput();
@@ -243,10 +234,11 @@
                         this.saveComment();
                     }
                 },
+
                 handleTextareaClick(event) {
-                    // Перешкоджаємо спрацьовуванню handleBodyClick при кліку всередині textarea
                     event.stopPropagation();
                 },
+
                 handleSend() {
                     if (this.newComment.trim() === '') {
                         this.resetCommentInput();
@@ -254,25 +246,38 @@
                         this.saveComment();
                     }
                 },
+
                 saveComment() {
+                    const relativeX = (this.currentPosition.x / window.innerWidth) * 100;
+                    const relativeY = (this.currentPosition.y / window.innerHeight) * 100;
+
                     this.comments.push({
                         id: Date.now(),
                         text: this.newComment.trim(),
-                        x: this.currentPosition.x,
-                        y: this.currentPosition.y
+                        relativeX: relativeX,
+                        relativeY: relativeY
                     });
                     this.resetCommentInput();
                 },
+
                 resetCommentInput() {
                     this.newComment = '';
                     this.$refs.commentArea.style.display = 'none';
                     this.showSendButton = false;
                     this.textareaVisible = false;
                 },
+
                 setActiveComment(commentId) {
                     this.activeCommentId = commentId;
+                },
+
+                cancelCommenting() {
+                    this.commentingEnabled = false;
+                    document.body.classList.remove('active-status');
+                    this.resetCommentInput();
                 }
             }
         }
     </script>
 </body>
+
