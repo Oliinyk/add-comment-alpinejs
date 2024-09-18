@@ -25,11 +25,7 @@
             background-color: #fff;
             border-radius: 5px;
             margin: 5px 0 0 42px;
-            width: 0;
-            height: 0;
-            border: 0;
-            padding: 0;
-            overflow: hidden;
+            transition: all 0.25s;
             z-index: 1;
         }
         .user-icon {
@@ -93,7 +89,7 @@
             top: 4px;
         }
         .comment-box.active,
-        .comment-box:hover {
+        .comment-box.hoverActive {
             width: 290px;
             z-index: 10;
         }
@@ -103,19 +99,26 @@
             height: 100%;
             width: 100%;
         }
-        .comment-box:not(.active):hover .text-col {
+        .text-col-inner {
+            display: none;
+        }
+        .hoverActive .text-col-inner,
+        .active .text-col-inner {
+            display: block;
+        } 
+        .comment-box:not(.active).hoverActive .text-col {
             padding: 5px 5px 10px;
             height: 100%;
             width: 100%;
         }
-        .comment-box:not(.active):hover .comment-img {
+        .comment-box:not(.active).hoverActive .comment-img {
             width: 300px;
             border-radius: 20px;
             border-bottom-left-radius: 0;
             height: 100%;
             box-shadow: 0px 0px 2px 1px #c2c2c2;
         }
-        .comment-box:not(.active):hover .user-icon {
+        .comment-box:not(.active).hoverActive .user-icon {
             top: 12px;
             left: 8px;
         }
@@ -123,12 +126,14 @@
 </head>
 <body x-data="commentSystem()" @click="handleBodyClick" @keydown.window.escape="cancelCommenting">
     <div class="comment-list">
-        <!-- Список коментарів -->
+        <!-- Comment list -->
         <template x-for="comment in comments" :key="comment.id">
             <div class="comment-box" 
-                 :class="{ 'active': comment.id === activeCommentId }" 
-                 :style="{ top: comment.relativeY + 'vh', left: comment.relativeX + 'vw' }" 
-                 @click.stop="setActiveComment(comment.id)">
+                :class="{ 'active': comment.id === activeCommentId, 'hoverActive': hoverCommentId === comment.id }" 
+                :style="{ top: comment.relativeY + 'vh', left: comment.relativeX + 'vw' }" 
+                @click.stop="setActiveComment(comment.id)"
+                @mouseenter="hoverCommentId = comment.id"
+                @mouseleave="hoverCommentId = null">
 
                 <div class="comment-img"></div>
 
@@ -139,13 +144,22 @@
                 </div>
 
                 <div class="text-col">
-                    <p class="text-sm font-semibold">Kevin</p>
-                    <p x-text="comment.text" class="text-sm"></p>
+                    <div class="text-col-inner relative">
+                        <p class="text-sm font-semibold">Kevin</p>
+                        <p x-text="comment.text" class="text-sm"></p>
+
+                        <!-- close comment -->
+                        <span class="absolute top-1 right-1 cursor-pointer" @click.stop="closeComment">
+                            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M0.292893 0.292893C0.683417 -0.0976311 1.31658 -0.0976311 1.70711 0.292893L6 4.58579L10.2929 0.292893C10.6834 -0.0976311 11.3166 -0.0976311 11.7071 0.292893C12.0976 0.683417 12.0976 1.31658 11.7071 1.70711L7.41421 6L11.7071 10.2929C12.0976 10.6834 12.0976 11.3166 11.7071 11.7071C11.3166 12.0976 10.6834 12.0976 10.2929 11.7071L6 7.41421L1.70711 11.7071C1.31658 12.0976 0.683417 12.0976 0.292893 11.7071C-0.0976311 11.3166 -0.0976311 10.6834 0.292893 10.2929L4.58579 6L0.292893 1.70711C-0.0976311 1.31658 -0.0976311 0.683417 0.292893 0.292893Z" fill="#111827"/>
+                            </svg>  
+                        </span>
+                    </div>
                 </div>
             </div>
         </template>
 
-        <!-- Поле для коментаря -->
+        <!-- fild for comment -->
         <div x-ref="commentArea" class="comment-area">
             <svg fill="none" height="40" viewBox="0 0 40 40" width="40" xmlns="http://www.w3.org/2000/svg">
                 <path d="m0 0h40v40h-40z" fill="#fff" fill-opacity=".01"/>
@@ -182,6 +196,7 @@
                 currentPosition: { x: 0, y: 0 },
                 textareaVisible: false,
                 activeCommentId: null,
+                hoverCommentId: null,
 
                 toggleCommenting() {
                     this.commentingEnabled = !this.commentingEnabled;
@@ -269,6 +284,11 @@
 
                 setActiveComment(commentId) {
                     this.activeCommentId = commentId;
+                },
+
+                closeComment() {
+                    this.activeCommentId = null;
+                    this.hoverCommentId = null;
                 },
 
                 cancelCommenting() {
